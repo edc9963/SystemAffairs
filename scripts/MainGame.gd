@@ -76,9 +76,9 @@ func _update_ui():
 	libido_bar.max_value = GameState.max_libido
 	libido_bar.value = GameState.libido
 	
-	project_bar.max_value = GameConstants.PROJECT_TARGET
+	project_bar.max_value = GameConstants.project_target
 	project_bar.value = GameState.project_progress
-	project_label.text = "Project: %.1f%%" % ((GameState.project_progress / GameConstants.PROJECT_TARGET) * 100.0)
+	project_label.text = "Project: %.1f%%" % ((GameState.project_progress / GameConstants.project_target) * 100.0)
 
 	# Attributes
 	for key in attr_labels:
@@ -150,7 +150,7 @@ func _on_action_pressed(act):
 	if act.cost.has("money"): GameState.modify_money(-act.cost.money)
 	
 	var san_cost = act.cost.get("san", 0)
-	if act.cost.get("isWork", false) and GameState.time.hour >= GameConstants.OVERTIME_START:
+	if act.cost.get("isWork", false) and GameState.time.hour >= GameConstants.overtime_start:
 		san_cost = max(san_cost, 10) * 2
 		GameState.log_message.emit("加班！壓力加倍！")
 	
@@ -190,7 +190,7 @@ func change_location(new_loc):
 
 # --- Effect Functions ---
 func _eff_spec():
-	var progress = GameConstants.BASE_EFFICIENCY * 0.1
+	var progress = GameConstants.base_efficiency * 0.1
 	GameState.project_progress += progress
 	GameState.log_message.emit("專案進度 +%.0f" % progress)
 
@@ -200,7 +200,7 @@ func _eff_sleep():
 	if current_hour < 7: sleep_hours = 7 - current_hour
 	else: sleep_hours = (24 - current_hour) + 7
 	
-	var rec_pct = sleep_hours * GameConstants.HP_RECOVERY_SLEEP
+	var rec_pct = sleep_hours * GameConstants.hp_recovery_sleep
 	var rec_val = floor(GameState.max_hp * rec_pct)
 	
 	GameState.time.day += 1
@@ -211,7 +211,7 @@ func _eff_sleep():
 	GameState.log_message.emit("睡眠結束，回復體力 " + str(rec_val))
 
 func _eff_debug_bp():
-	GameState.project_progress += GameConstants.BASE_EFFICIENCY * 5
+	GameState.project_progress += GameConstants.base_efficiency * 5
 	GameState.log_message.emit("時停趕工完成！")
 
 func _npc_interact(char_id, aff_gain, stat_cost):
@@ -233,11 +233,11 @@ func setup_actions_from_csv():
 		"go_out_select": [], "npc_select": []
 	}
 	
-	var path = "res://act.csv"
+	var path = "res://data/act.csv"
 	if not FileAccess.file_exists(path):
 		print("act.csv not found at " + path)
 		# Fallback to user:// just in case (for exported builds context)
-		path = "user://GodotProject/act.csv"
+		path = "user://GodotProject/data/act.csv"
 		
 	if not FileAccess.file_exists(path):
 		print("act.csv not found at " + path)

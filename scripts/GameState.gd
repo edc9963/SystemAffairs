@@ -4,14 +4,14 @@ signal stats_changed
 signal time_changed
 signal log_message(msg)
 
-var hp: float = GameConstants.MAX_HP
-var max_hp: float = GameConstants.MAX_HP
+var hp: float = GameConstants.max_hp
+var max_hp: float = GameConstants.max_hp
 var san: float = 0.0
-var max_san: float = GameConstants.MAX_SAN
+var max_san: float = GameConstants.max_san
 var libido: float = 0.0
-var max_libido: float = GameConstants.MAX_LIBIDO
+var max_libido: float = GameConstants.max_libido
 
-var money: int = GameConstants.STARTING_SAVINGS
+var money: int = GameConstants.starting_savings
 
 var attributes = {
 	"comm": 10,
@@ -84,7 +84,7 @@ func update_time(hours: int, minutes: int = 0):
 		return
 
 	# Overtime Check (Simplified)
-	if time.hour >= GameConstants.OVERTIME_START:
+	if time.hour >= GameConstants.overtime_start:
 		pass
 
 	time.minute += minutes
@@ -102,11 +102,11 @@ func update_time(hours: int, minutes: int = 0):
 	time_changed.emit()
 
 func daily_reset():
-	modify_stat("libido", GameConstants.LIBIDO_DAILY_GROWTH)
+	modify_stat("libido", GameConstants.libido_daily_growth)
 	
 	if time.day == 30:
-		modify_money(-GameConstants.FIXED_COST_RENT)
-		log_message.emit("扣除房租 $" + str(GameConstants.FIXED_COST_RENT))
+		modify_money(-GameConstants.fixed_cost_rent)
+		log_message.emit("扣除房租 $" + str(GameConstants.fixed_cost_rent))
 	
 	log_message.emit("Day " + str(time.day) + " 開始。")
 

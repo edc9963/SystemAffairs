@@ -1,40 +1,40 @@
 extends Node
 
 # Time & Cycle
-var TOTAL_DAYS = 30
-var WORK_START_TIME = 9
-var WORK_END_TIME = 18
-var OVERTIME_START = 19
-var HP_RECOVERY_SLEEP = 0.125 # 12.5%
+var total_days = 30
+var work_start_time = 9
+var work_end_time = 18
+var overtime_start = 19
+var hp_recovery_sleep = 0.125 # 12.5%
 
 # Stats Limits
-var MAX_HP = 100
-var MAX_SAN = 100
-var SAN_WARNING = 80
-var MAX_LIBIDO = 100
-var LIBIDO_PENALTY = 80
-var LIBIDO_SAGE = 20
-var LIBIDO_DAILY_GROWTH = 15
+var max_hp = 100
+var max_san = 100
+var san_warning = 80
+var max_libido = 100
+var libido_penalty = 80
+var libido_sage = 20
+var libido_daily_growth = 15
 
 # Economy
-var BASE_SALARY = 45000
-var STARTING_SAVINGS = 50000
-var FIXED_COST_RENT = 12000
-var CREDIT_LIMIT_RATIO = 1.5
-var BONUS_PER_POINT = 10
+var base_salary = 45000
+var starting_savings = 50000
+var fixed_cost_rent = 12000
+var credit_limit_ratio = 1.5
+var bonus_per_point = 10
 
 # Project
-var PROJECT_TARGET = 100000
-var MIN_PASS = 60000
-var BASE_EFFICIENCY = 1000 # pts/hr
+var project_target = 100000
+var min_pass = 60000
+var base_efficiency = 1000 # pts/hr
 
 func _ready():
 	load_base_states()
 
 func load_base_states():
-	var path = "res://BaseStates.csv"
+	var path = "res://data/BaseStates.csv"
 	if not FileAccess.file_exists(path):
-		path = "user://GodotProject/BaseStates.csv"
+		path = "user://GodotProject/data/BaseStates.csv"
 	
 	if not FileAccess.file_exists(path):
 		print("BaseStates.csv not found!")
@@ -67,26 +67,26 @@ func _set_config_value(key, val_str):
 		val = val_str.to_int()
 
 	match key:
-		"TOTAL_DAYS": TOTAL_DAYS = val
-		"WORK_START_TIME": WORK_START_TIME = _parse_time(val_str)
-		"WORK_END_TIME": WORK_END_TIME = _parse_time(val_str)
-		"OVERTIME_START": OVERTIME_START = _parse_time(val_str)
-		"HP_RECOVERY_SLEEP": HP_RECOVERY_SLEEP = val # Handled above
-		"MAX_HP": MAX_HP = val
-		"MAX_SAN": MAX_SAN = val
-		"SAN_WARNING": SAN_WARNING = val
-		"MAX_LIBIDO": MAX_LIBIDO = val
-		"LIBIDO_PENALTY_THRESHOLD": LIBIDO_PENALTY = val
-		"LIBIDO_SAGE_THRESHOLD": LIBIDO_SAGE = val
-		"LIBIDO_DAILY_GROWTH": LIBIDO_DAILY_GROWTH = val
-		"BASE_SALARY": BASE_SALARY = val
-		"STARTING_SAVINGS": STARTING_SAVINGS = val
-		"FIXED_COST_RENT": FIXED_COST_RENT = val
-		"CREDIT_LIMIT_MULTIPLIER": CREDIT_LIMIT_RATIO = val
-		"BONUS_PER_POINT": BONUS_PER_POINT = val
-		"PROJECT_TARGET_POINTS": PROJECT_TARGET = val
-		"MIN_PASS_POINTS": MIN_PASS = val
-		"BASE_WORK_EFFICIENCY": BASE_EFFICIENCY = val
+		"TOTAL_DAYS": total_days = val
+		"WORK_START_TIME": work_start_time = _parse_time(val_str)
+		"WORK_END_TIME": work_end_time = _parse_time(val_str)
+		"OVERTIME_START": overtime_start = _parse_time(val_str)
+		"HP_RECOVERY_SLEEP": hp_recovery_sleep = val # Handled above
+		"MAX_HP": max_hp = val
+		"MAX_SAN": max_san = val
+		"SAN_WARNING": san_warning = val
+		"MAX_LIBIDO": max_libido = val
+		"LIBIDO_PENALTY_THRESHOLD": libido_penalty = val
+		"LIBIDO_SAGE_THRESHOLD": libido_sage = val
+		"LIBIDO_DAILY_GROWTH": libido_daily_growth = val
+		"BASE_SALARY": base_salary = val
+		"STARTING_SAVINGS": starting_savings = val
+		"FIXED_COST_RENT": fixed_cost_rent = val
+		"CREDIT_LIMIT_MULTIPLIER": credit_limit_ratio = val
+		"BONUS_PER_POINT": bonus_per_point = val
+		"PROJECT_TARGET_POINTS": project_target = val
+		"MIN_PASS_POINTS": min_pass = val
+		"BASE_WORK_EFFICIENCY": base_efficiency = val
 
 func _parse_time(str_val):
 	# Handle "9:00" -> 9

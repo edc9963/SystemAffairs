@@ -1,0 +1,14 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://5acnfpqaujx8"
+
+[deps]
+
+source_file="res://BaseStates.csv"
+
+[params]
+
+compress=true
+delimiter=0

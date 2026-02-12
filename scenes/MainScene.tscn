@@ -1,0 +1,211 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8x7y203q1w4"]
+
+[ext_resource type="Script" uid="uid://bnyq3466a8en8" path="res://scripts/MainGame.gd" id="1_script"]
+
+[node name="MainGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Sidebar" type="VBoxContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+
+[node name="Title" type="Label" parent="HBoxContainer/Sidebar"]
+layout_mode = 2
+text = "System Affairs V1.04"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="HBoxContainer/Sidebar"]
+layout_mode = 2
+
+[node name="StatsContainer" type="VBoxContainer" parent="HBoxContainer/Sidebar"]
+layout_mode = 2
+
+[node name="MoneyLabel" type="Label" parent="HBoxContainer/Sidebar/StatsContainer"]
+layout_mode = 2
+text = "Money: $50000"
+
+[node name="HPLabel" type="Label" parent="HBoxContainer/Sidebar/StatsContainer"]
+layout_mode = 2
+text = "HP"
+
+[node name="HPBar" type="ProgressBar" parent="HBoxContainer/Sidebar/StatsContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+value = 100.0
+
+[node name="SanLabel" type="Label" parent="HBoxContainer/Sidebar/StatsContainer"]
+layout_mode = 2
+text = "SAN (Stress)"
+
+[node name="SanBar" type="ProgressBar" parent="HBoxContainer/Sidebar/StatsContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="LibidoLabel" type="Label" parent="HBoxContainer/Sidebar/StatsContainer"]
+layout_mode = 2
+text = "Libido"
+
+[node name="LibidoBar" type="ProgressBar" parent="HBoxContainer/Sidebar/StatsContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="HBoxContainer/Sidebar"]
+layout_mode = 2
+
+[node name="AttrContainer" type="GridContainer" parent="HBoxContainer/Sidebar"]
+layout_mode = 2
+columns = 2
+
+[node name="CommLabel" type="Label" parent="HBoxContainer/Sidebar/AttrContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Comm: 10"
+
+[node name="TechLabel" type="Label" parent="HBoxContainer/Sidebar/AttrContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Tech: 10"
+
+[node name="CharmLabel" type="Label" parent="HBoxContainer/Sidebar/AttrContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Charm: 10"
+
+[node name="LogicLabel" type="Label" parent="HBoxContainer/Sidebar/AttrContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Logic: 10"
+
+[node name="ResLabel" type="Label" parent="HBoxContainer/Sidebar/AttrContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Res: 10"
+
+[node name="HSeparator3" type="HSeparator" parent="HBoxContainer/Sidebar"]
+layout_mode = 2
+
+[node name="AffectionContainer" type="VBoxContainer" parent="HBoxContainer/Sidebar"]
+layout_mode = 2
+
+[node name="JuniorLabel" type="Label" parent="HBoxContainer/Sidebar/AffectionContainer"]
+layout_mode = 2
+text = "Junior: 10"
+
+[node name="PMLabel" type="Label" parent="HBoxContainer/Sidebar/AffectionContainer"]
+layout_mode = 2
+text = "PM: 5"
+
+[node name="PeerLabel" type="Label" parent="HBoxContainer/Sidebar/AffectionContainer"]
+layout_mode = 2
+text = "Peer: 0"
+
+[node name="HSeparator4" type="HSeparator" parent="HBoxContainer/Sidebar"]
+layout_mode = 2
+
+[node name="ProjectLabel" type="Label" parent="HBoxContainer/Sidebar"]
+layout_mode = 2
+text = "Project: 0%"
+
+[node name="ProjectBar" type="ProgressBar" parent="HBoxContainer/Sidebar"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="HSeparator5" type="HSeparator" parent="HBoxContainer/Sidebar"]
+layout_mode = 2
+
+[node name="BackpackBtn" type="Button" parent="HBoxContainer/Sidebar"]
+layout_mode = 2
+text = "Backpack (0)"
+
+[node name="Main" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Header" type="HBoxContainer" parent="HBoxContainer/Main"]
+layout_mode = 2
+alignment = 1
+
+[node name="LocationLabel" type="Label" parent="HBoxContainer/Main/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Location: Home"
+
+[node name="TimeLabel" type="Label" parent="HBoxContainer/Main/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Day 1 08:00"
+
+[node name="BreakpointBtn" type="Button" parent="HBoxContainer/Main/Header"]
+layout_mode = 2
+text = "SYSTEM BREAKPOINT"
+
+[node name="ActionGrid" type="GridContainer" parent="HBoxContainer/Main"]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 3
+
+[node name="LogPanel" type="PanelContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="HBoxContainer/LogPanel"]
+layout_mode = 2
+bbcode_enabled = true
+text = "System Log Loaded..."
+scroll_following = true
+
+[node name="InventoryPanel" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(400, 300)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="InventoryPanel"]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="InventoryPanel/VBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="InventoryPanel/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Backpack"
+
+[node name="CloseBtn" type="Button" parent="InventoryPanel/VBox/Header"]
+layout_mode = 2
+text = "X"
+
+[node name="Scroll" type="ScrollContainer" parent="InventoryPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ItemGrid" type="GridContainer" parent="InventoryPanel/VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 4
+
+[connection signal="pressed" from="HBoxContainer/Main/Header/BreakpointBtn" to="." method="_on_breakpoint_toggle"]

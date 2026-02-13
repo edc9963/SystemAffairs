@@ -24,12 +24,17 @@ var attributes = {
 var time = {
 	"day": 1,
 	"hour": 7,
-	"minute": 0
+	"minute": 0,
+	"weekday": 1 # 1=Mon, 7=Sun
 }
 
 var location = "home"
 var is_breakpoint_active: bool = false
-var project_progress: float = 0.0
+var project_progress = 0.0 # Deprecated, keep for compat if needed, or remove?
+# Waterfall Progress
+var prog_meeting = 0.0
+var prog_spec = 0.0
+var prog_test = 0.0
 
 var characters = {
 	"junior": {"name": "學妹", "affection": 10, "depravity": 0},
@@ -96,6 +101,9 @@ func update_time(hours: int, minutes: int = 0):
 	
 	if time.hour >= 24:
 		time.day += 1
+		time.weekday += 1
+		if time.weekday > 7:
+			time.weekday = 1
 		time.hour = time.hour % 24
 		daily_reset()
 	

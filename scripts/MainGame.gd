@@ -36,7 +36,13 @@ extends Control
 @onready var inv_grid = $InventoryPanel/VBox/Scroll/ItemGrid
 @onready var inv_close_btn = $InventoryPanel/VBox/Header/CloseBtn
 
+@onready var sleep_panel = $SleepPanel
+@onready var sleep_spin = $SleepPanel/VBox/SpinBox
+@onready var sleep_confirm = $SleepPanel/VBox/HBox/ConfirmBtn
+@onready var sleep_cancel = $SleepPanel/VBox/HBox/CancelBtn
+
 var actions_data = {}
+var project_action_defs = {}
 
 func _ready():
 	GameState.log_message.connect(_on_log_message)
@@ -50,12 +56,19 @@ func _ready():
 	if backpack_btn: backpack_btn.pressed.connect(_on_backpack_btn_pressed)
 	if inv_close_btn: inv_close_btn.pressed.connect(_on_inventory_close_pressed)
 
+	if sleep_confirm: sleep_confirm.pressed.connect(_on_sleep_confirm_pressed)
+	if sleep_cancel: sleep_cancel.pressed.connect(_on_sleep_cancel_pressed)
+
 func _on_log_message(msg):
 	log_label.append_text("> " + msg + "\n")
 
 func _update_ui():
 	# Header
-	time_label.text = "Day %d %02d:%02d" % [GameState.time.day, GameState.time.hour, GameState.time.minute]
+	var t = GameState.time
+	var day_str = "Day %d" % t.day
+	var time_str = "%02d:%02d" % [t.hour, t.minute]
+	var wkd_str = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][t.weekday - 1]
+	time_label.text = "%s\n%s (%s)" % [day_str, time_str, wkd_str]
 	location_label.text = get_location_name(GameState.location)
 	
 	if GameState.is_breakpoint_active:
@@ -67,21 +80,46 @@ func _update_ui():
 
 	# Stats
 	money_label.text = "Money: $%d" % GameState.money
+	
 	hp_bar.max_value = GameState.max_hp
 	hp_bar.value = GameState.hp
+	var hp_pct = (GameState.hp/GameState.max_hp)*100
+	$HBoxContainer/Sidebar/StatsContainer/HPLabel.text = "HP: %.0f/%.0f (%.0f%%)" % [
+		GameState.hp, GameState.max_hp, hp_pct]
 	
 	san_bar.max_value = GameState.max_san
 	san_bar.value = GameState.san
+	var san_pct = (GameState.san/GameState.max_san)*100
+	$HBoxContainer/Sidebar/StatsContainer/SanLabel.text = "SAN: %.0f/%.0f (%.0f%%)" % [
+		GameState.san, GameState.max_san, san_pct]
 	
 	libido_bar.max_value = GameState.max_libido
 	libido_bar.value = GameState.libido
+	var lib_pct = (GameState.libido/GameState.max_libido)*100
+	$HBoxContainer/Sidebar/StatsContainer/LibidoLabel.text = "Libido: %.0f/%.0f (%.0f%%)" % [
+		GameState.libido, GameState.max_libido, lib_pct]
+	
+	# Waterfall Project Progress
+	var target_per_stage = GameConstants.project_target / 3.0
+	var total_prog = (GameState.prog_meeting + GameState.prog_spec + GameState.prog_test)
+	var total_pct = (total_prog / GameConstants.project_target) * 100.0
 	
 	project_bar.max_value = GameConstants.project_target
-	project_bar.value = GameState.project_progress
-	project_label.text = "Project: %.1f%%" % ((GameState.project_progress / GameConstants.project_target) * 100.0)
+	project_bar.value = total_prog
+	
+	# Determine Stage Text
+	var stage_text = "Idle"
+	if GameState.prog_meeting < target_per_stage: stage_text = "Meeting"
+	elif GameState.prog_spec < target_per_stage: stage_text = "Spec"
+	elif GameState.prog_test < target_per_stage: stage_text = "Testing"
+	else: stage_text = "Done"
+	
+	project_label.text = "Project: [%s] %.1f%%" % [stage_text, total_pct]
 
 	# Attributes
 	for key in attr_labels:
+		# The original code had a dummy "hp_text" in attr_labels, which is no longer needed
+		# as HPLabel is directly referenced. Removing the skip.
 		var val = GameState.attributes.get(key, 0)
 		attr_labels[key].text = "%s: %d" % [key.capitalize(), val]
 
@@ -109,7 +147,9 @@ func get_location_name(loc_id):
 		"cvs": "便利超商 (CVS)",
 		"mall": "電子商場 (3C Mall)",
 		"dept": "百貨精品 (Dept. Store)",
-		"go_out_select": "外出 (Going Out)"
+		"go_out_select": "外出 (Going Out)",
+		"wakeup_mode": "早晨 (Morning)",
+		"project_board": "專案看板 (Board)"
 	}
 	return map.get(loc_id, loc_id)
 
@@ -117,11 +157,16 @@ func render_actions():
 	for child in action_container.get_children():
 		child.queue_free()
 	
+	# Breakpoint Logic: Show Location Actions + Debug
 	var current_list = []
+	if actions_data.has(GameState.location):
+		current_list = actions_data[GameState.location].duplicate()
+	
 	if GameState.is_breakpoint_active:
-		current_list = actions_data.get("breakpoint", [])
-	else:
-		current_list = actions_data.get(GameState.location, [])
+		# Append Debug/Exit actions to current list
+		var bp_list = actions_data.get("breakpoint", [])
+		for act in bp_list:
+			current_list.append(act)
 	
 	for act in current_list:
 		if act.has("condition") and not act.condition.call():
@@ -133,12 +178,53 @@ func render_actions():
 		if act.cost.has("hp"): cost_str += "HP-%d " % act.cost.hp
 		if act.cost.has("money"): cost_str += "$%d " % act.cost.money
 		
-		btn.text = "%s\n(%s)" % [act.label, cost_str]
+		# In Breakpoint, time cost is SAN cost
+		if GameState.is_breakpoint_active and act.cost.has("time"):
+			cost_str += "(BP:San-%d)" % act.cost.time
+		
+		if cost_str != "":
+			btn.text = "%s\n(%s)" % [act.label, cost_str]
+		else:
+			btn.text = "%s" % act.label
+			
 		btn.custom_minimum_size = Vector2(120, 80)
 		btn.pressed.connect(_on_action_pressed.bind(act))
 		action_container.add_child(btn)
 
 func _on_action_pressed(act):
+	# --- Breakpoint Logic (Time Stop) ---
+	if GameState.is_breakpoint_active:
+		# 1. Check Costs (Money/HP still apply?)
+		# User said: "All actions normal, change Cost Time = Cost San"
+		if act.cost.has("hp") and GameState.hp < act.cost.hp:
+			GameState.log_message.emit("體力不足！")
+			return
+		if act.cost.has("money") and GameState.money < act.cost.money:
+			GameState.log_message.emit("金錢不足！")
+			return
+			
+		# 2. Apply Costs (HP/Money)
+		if act.cost.has("hp"): GameState.modify_stat("hp", -act.cost.hp)
+		if act.cost.has("money"): GameState.modify_money(-act.cost.money)
+		
+		# 3. Handle Time -> Sanity
+		var time_cost = act.cost.get("time", 0)
+		if time_cost > 0:
+			GameState.modify_stat("san", time_cost) # Increase Stress
+			GameState.log_message.emit("時停行動... 累積壓力 %d" % time_cost)
+		
+		# 4. Check Sanity Overflow
+		if GameState.san >= GameState.max_san:
+			GameState.is_breakpoint_active = false
+			GameState.log_message.emit("壓力爆表！強制解除時間暫停！")
+			_update_ui()
+			
+		# 5. Apply Effects (Normal logic without time update)
+		_apply_action_effects(act)
+		render_actions()
+		return
+
+	# --- Normal Logic ---
 	if act.cost.has("hp") and GameState.hp < act.cost.hp:
 		GameState.log_message.emit("體力不足！")
 		return
@@ -158,6 +244,10 @@ func _on_action_pressed(act):
 	
 	if act.cost.has("time"): GameState.update_time(0, act.cost.time)
 	
+	_apply_action_effects(act)
+	render_actions()
+
+func _apply_action_effects(act):
 	# Generic Stat/Attr Effects from CSV (deltas)
 	if act.has("delta_stats"):
 		for stat in act.delta_stats:
@@ -173,8 +263,7 @@ func _on_action_pressed(act):
 	# Special Logic Effect
 	if act.get("effect"):
 		act.effect.call()
-	
-	render_actions()
+
 
 func _on_breakpoint_toggle():
 	GameState.is_breakpoint_active = not GameState.is_breakpoint_active
@@ -195,20 +284,71 @@ func _eff_spec():
 	GameState.log_message.emit("專案進度 +%.0f" % progress)
 
 func _eff_sleep():
+	sleep_panel.visible = true
+	# Set default next wake up time based on current? 
+	# For now just let user pick.
+
+func _on_sleep_confirm_pressed():
+	sleep_panel.visible = false
+	var target_hour = int(sleep_spin.value)
+	
 	var current_hour = GameState.time.hour
 	var sleep_hours = 0
-	if current_hour < 7: sleep_hours = 7 - current_hour
-	else: sleep_hours = (24 - current_hour) + 7
-	
+	if target_hour > current_hour:
+		sleep_hours = target_hour - current_hour
+	else:
+		sleep_hours = (24 - current_hour) + target_hour
+		
 	var rec_pct = sleep_hours * GameConstants.hp_recovery_sleep
 	var rec_val = floor(GameState.max_hp * rec_pct)
 	
+	# Advance time
 	GameState.time.day += 1
-	GameState.time.hour = 7
+	GameState.time.weekday += 1
+	if GameState.time.weekday > 7: GameState.time.weekday = 1
+	
+	GameState.time.hour = target_hour
 	GameState.time.minute = 0
+	
 	GameState.modify_stat("hp", rec_val)
 	GameState.daily_reset()
-	GameState.log_message.emit("睡眠結束，回復體力 " + str(rec_val))
+	GameState.log_message.emit("睡眠結束 (共 %d 小時)，回復體力 %d" % [sleep_hours, rec_val])
+	
+	enter_wakeup_mode()
+
+func _on_sleep_cancel_pressed():
+	sleep_panel.visible = false
+
+func enter_wakeup_mode():
+	GameState.location = "wakeup_mode"
+	
+	actions_data["wakeup_mode"] = []
+	
+	actions_data["wakeup_mode"].append({
+		"id": "stay_in_bed",
+		"label": "賴床 (Stay in Bed)",
+		"cost": {"time": 30},
+		"effect": func(): _eff_stay_in_bed()
+	})
+	
+	actions_data["wakeup_mode"].append({
+		"id": "get_up",
+		"label": "起床 (Get Up)",
+		"cost": {},
+		"effect": func(): change_location("home")
+	})
+	
+	change_location("wakeup_mode")
+
+func _eff_stay_in_bed():
+	# Stay in bed effect: Recover 5 HP, 5 SAN, Cost 30m (handled by cost)
+	GameState.modify_stat("hp", 5)
+	GameState.modify_stat("san", -5) # Reduce stress
+	GameState.log_message.emit("賴床... 真舒服 (HP+5, Stress-5)")
+	# Re-render to update time
+	render_actions()
+
+
 
 func _eff_debug_bp():
 	GameState.project_progress += GameConstants.base_efficiency * 5
@@ -217,7 +357,8 @@ func _eff_debug_bp():
 func _npc_interact(char_id, aff_gain, stat_cost):
 	if GameState.characters.has(char_id):
 		GameState.characters[char_id].affection += aff_gain
-		GameState.log_message.emit("與 %s 互動，好感度 +%d" % [GameState.characters[char_id].name, aff_gain])
+		GameState.log_message.emit("與 %s 互動，好感度 +%d" % [
+			GameState.characters[char_id].name, aff_gain])
 	
 	for stat in stat_cost:
 		GameState.modify_stat(stat, stat_cost[stat])
@@ -230,13 +371,14 @@ func setup_actions_from_csv():
 		"office": [], "home": [], "bar": [], "gym": [], 
 		"temple": [], "meis": [], "bear": [], "breakpoint": [],
 		"cvs": [], "mall": [], "dept": [],
-		"go_out_select": [], "npc_select": []
+		"go_out_select": [], "npc_select": [], "wakeup_mode": [],
+		"npc_interaction": []
 	}
 	
 	var path = "res://data/act.csv"
 	if not FileAccess.file_exists(path):
 		print("act.csv not found at " + path)
-		# Fallback to user:// just in case (for exported builds context)
+		# Fallback for exported builds
 		path = "user://GodotProject/data/act.csv"
 		
 	if not FileAccess.file_exists(path):
@@ -246,6 +388,9 @@ func setup_actions_from_csv():
 	print("Loading act.csv from: " + path)
 	var file = FileAccess.open(path, FileAccess.READ)
 	var headers = []
+	
+	var social_actions = {}
+	
 	while not file.eof_reached():
 		var line = file.get_csv_line()
 		if line.size() < 2: continue
@@ -255,12 +400,29 @@ func setup_actions_from_csv():
 			headers = line
 			continue
 		
-		# Skip non-data
-		if line[0] == "" or line[0].begins_with("早晨") or line[0] == "道具(消耗品) 效果":
+		# Skip Separator/Header Lines
+		if line[0].length() > 6 or line[1] == "":
 			continue
 
 		var act = parse_csv_row(line, headers)
 		if act:
+			# Project Actions Consolidation
+			if act.id == "W01": # Spec -> Work Entry
+				project_action_defs["spec"] = act.duplicate()
+				act.label = "工作 (Project)"
+				# act will continue to be added to office as entry point
+			elif act.id == "W02": # Debug
+				project_action_defs["debug"] = act
+				continue # Skip adding to office list
+			elif act.id == "W03": # Meeting
+				project_action_defs["meeting"] = act
+				continue # Skip adding to office list
+
+			# Cache Social/Date/Sex actions
+			if act.id.begins_with("S") or act.id.begins_with("R"):
+				social_actions[act.id] = act
+				continue
+
 			var cat_map = {
 				"Work": "office", "Slack": "office", 
 				"Home": "home", "Bar": "bar", "Gym": "gym", 
@@ -287,56 +449,40 @@ func setup_actions_from_csv():
 			
 			if actions_data.has(loc):
 				# Check if Shop Item
-				# Force I-series (Consumables) to CVS
 				if act.id.begins_with("I"):
 					loc = "cvs"
-					# Create CVS list if not exists (should be initialized though)
 					if not actions_data.has("cvs"): actions_data["cvs"] = []
-					# Avoid adding to original loc if it was different
-					if actions_data.has(loc):
-						pass 
 
 				if loc in ["cvs", "mall", "dept", "meis"] and act.category == "Consumable": 
 					pass
 					
-				# Special handling for Shop Items to go to Inventory
-				# I series are Consumables. E, D series are items.
-				# If it has a cost and stats, but is sold in a shop, it might be an item.
-				# But wait, original code applied stats directly. 
-				# New Logic: If it is I, E, D, C series?
-				# C(CVS), E(Mall), D(Dept).
-				if act.id.begins_with("C") or act.id.begins_with("E") or act.id.begins_with("D") or act.id.begins_with("I"):
-					# It's an item!
-					# Add to GameState.item_db
-					# Stats are in act.delta_stats and act.delta_attrs
+				# Shop Items Logic
+				if act.id.begins_with("C") or act.id.begins_with("E") or \
+				act.id.begins_with("D") or act.id.begins_with("I"):
 					var item_entry = {
 						"name": act.label,
 						"stats": act.delta_stats.duplicate(),
 						"attrs": act.delta_attrs.duplicate()
 					}
-					# Merge attrs into stats for uniform handling in use_item? 
-					# use_item logic needs updates to handle attributes too.
 					for k in act.delta_attrs:
 						item_entry.stats[k] = act.delta_attrs[k]
 						
 					GameState.item_db[act.id] = item_entry
 					
-					# Transform Action to "Buy"
 					act.effect = func(): 
 						GameState.add_item(act.id, 1)
 					
-					# Remove direct stat application from action (handled by effect -> add_item -> use_item)
 					act.delta_stats = {}
 					act.delta_attrs = {}
-					# Cost remains (Money/Time)
 
 				actions_data[loc].append(act)
 
-	# Navigation Logic: "Go Out" Submenu
-	# 1. Add "Go Out" button to Home
+	# --- Navigation Logic ---
+	
+	# 1. Home -> Go Out
 	add_nav_action("home", "open_go_out", "出門 (Go Out)", "go_out_select", 0)
 	
-	# 2. Add Destinations to "go_out_select"
+	# 2. Map (Go Out Select)
 	add_nav_action("go_out_select", "go_office", "上班 (Office)", "office", 30)
 	add_nav_action("go_out_select", "go_bar", "酒吧 (Bar)", "bar", 30)
 	add_nav_action("go_out_select", "go_gym", "健身房 (Gym)", "gym", 30)
@@ -347,80 +493,70 @@ func setup_actions_from_csv():
 	add_nav_action("go_out_select", "go_meis", "美姨豆漿 (Mei's)", "meis", 15)
 	add_nav_action("go_out_select", "go_bear", "兼職外送 (Bear)", "bear", 15)
 	
-	# 3. Add Back button to "go_out_select"
-	add_nav_action("go_out_select", "cancel_out", "返回 (Cancel)", "home", 0)
+	# Map -> Home (Cost 30m)
+	add_nav_action("go_out_select", "cancel_out", "回家 (Home)", "home", 30)
 
-	# Office -> Home (Commute)
-	add_nav_action("office", "go_home", "下班 (Home)", "home", 30, func(): return GameState.time.hour >= GameConstants.WORK_END_TIME)
+	# 3. Office -> Map (Off Work - Condition Fixed?)
+	# Re-added check logic
+	add_nav_action("office", "go_home", "下班 (Off Work)", "go_out_select", 0, 
+		func(): return GameState.time.hour >= GameConstants.work_end_time)
 	
 	# Locations -> Go Out Select (Return to Map)
-	add_nav_action("bar", "leave", "離開", "go_out_select", 15)
-	add_nav_action("gym", "leave", "離開", "go_out_select", 15)
-	add_nav_action("temple", "leave", "離開", "go_out_select", 15)
-	add_nav_action("meis", "leave", "離開", "go_out_select", 15)
-	add_nav_action("bear", "leave", "離開", "go_out_select", 15)
-	add_nav_action("cvs", "leave", "離開", "go_out_select", 15)
-	add_nav_action("mall", "leave", "離開", "go_out_select", 15)
-	add_nav_action("dept", "leave", "離開", "go_out_select", 15)
+	for lid in ["bar", "gym", "temple", "meis", "bear", "cvs", "mall", "dept"]:
+		add_nav_action(lid, "leave", "離開", "go_out_select", 15)
 
-	# Breakpoint debug
+	# Breakpoint (Debug)
+	actions_data["breakpoint"] = []
 	actions_data["breakpoint"].append({
-		"id": "bp_debug", "label": "Debug (趕工)", "cost": {"san": 30}, "effect": _eff_debug_bp
+		"id": "bp_debug", 
+		"label": "Debug (趕工)", 
+		"cost": {"san": 30}, 
+		"effect": _eff_debug_bp
 	})
 
-	# NPC Selection Menu
-	add_nav_action("npc_select", "chat_junior", "找學妹聊天\n(+好感度)", "npc_select", 15, null)
-	actions_data["npc_select"].back().effect = func(): 
-		_npc_interact("junior", 2, {"comm": 1, "san": -2})
+	# --- NPC Selection Menu ---
+	# Level 1: Select Character
+	add_npc_select_entry("junior", "學妹 (Junior)")
+	add_npc_select_entry("pm", "PM (Project Manager)")
+	add_npc_select_entry("peer", "隱藏千金 (Rich Girl)")
 	
-	add_nav_action("npc_select", "chat_pm", "找 PM 聊天\n(+好感度)", "npc_select", 15, null)
-	actions_data["npc_select"].back().effect = func(): 
-		_npc_interact("pm", 2, {"comm": 1, "san": 5})
-
-	add_nav_action("npc_select", "chat_peer", "找隱藏千金聊天\n(+好感度)", "npc_select", 15, null)
-	actions_data["npc_select"].back().effect = func(): 
-		_npc_interact("peer", 2, {"logic": 1})
-
 	add_nav_action("npc_select", "return_office", "返回辦公室", "office", 0)
+	
+	# Helper to build dynamic menus
+	_build_social_menus(social_actions)
 
 func parse_csv_row(line, _headers):
 	# Headers structure based on observation (approx mapping by index if headers match)
-	# ID, Category, Action Name, Duration_Min, HP, SAN, Libido, Money, Comm, Tech, Resilience, Charm, Logic
+	# ID, Category, Action Name, Duration_Min, HP, SAN, Libido, Money, 
+	# Comm, Tech, Resilience, Charm, Logic
 	
 	var id = line[0]
 	var cat = line[1]
+	# Cost Map: HP, SAN, Libido, Money
+	var cost = {}
 	var act_name = line[2]
-	var cost_time = line[3].to_int()
+	var cost_time = parse_val(line[3])
 	
-	# Stats (Negative = Cost, Positive = Gain?)
-	# Logic: In perform_action, act.cost.hp is reduced. 
-	# CSV: W01 HP = -15. Meaning Cost 15.
-	# So if val < 0: cost = -val.
-	# If val > 0: gain (effect).
-	
+	# ... (Stats parsing) ...
 	var hp_val = parse_val(line[4])
 	var san_val = parse_val(line[5])
 	var lib_val = parse_val(line[6])
 	var money_val = parse_val(line[7])
 	
-	var cost = {}
 	var delta_stats = {}
 	
 	# Time
 	if cost_time > 0: cost["time"] = cost_time
 	
 	# HP
-	if hp_val < 0: cost["hp"] = -hp_val # Cost 15
+	if hp_val < 0: cost["hp"] = -hp_val 
 	elif hp_val > 0: delta_stats["hp"] = hp_val
 	
 	# Money
 	if money_val < 0: cost["money"] = -money_val
 	elif money_val > 0: delta_stats["money"] = money_val
 	
-	# SAN (Positive usually cost/stress)
-	# W01 SAN=10 (Gain Stress). In perform_action: san_cost = act.cost.san. 
-	# We treat positive SAN in CSV as 'Cost' (Stress Increase).
-	# Negative SAN in CSV (e.g. -10) is Stress Relief.
+	# SAN
 	if san_val > 0: cost["san"] = san_val
 	elif san_val < 0: delta_stats["san"] = san_val
 	
@@ -428,7 +564,6 @@ func parse_csv_row(line, _headers):
 	if lib_val != 0: delta_stats["libido"] = lib_val
 
 	# Attributes
-	# Comm(8), Tech(9), Res(10), Charm(11), Logic(12)
 	var delta_attrs = {}
 	if parse_val(line[8]) != 0: delta_attrs["comm"] = parse_val(line[8])
 	if parse_val(line[9]) != 0: delta_attrs["tech"] = parse_val(line[9])
@@ -438,12 +573,13 @@ func parse_csv_row(line, _headers):
 	
 	# Special Function Binding
 	var effect_func = null
-	if id == "W01": effect_func = _eff_spec
-	elif id == "sleep": effect_func = _eff_sleep # A01/L07?
-	# Map sleep ID if found
-	if "WakeUp" == cat: 
-		# Maybe A01 is strict Alarm? L07 is "Sleep"?
-		pass
+	if id == "W01": effect_func = _open_project_board
+	elif id == "L07": effect_func = _eff_sleep 
+	# Gym Max HP Effect
+	elif id == "G01" or id == "G02":
+		effect_func = func():
+			GameState.max_hp += 10
+			GameState.log_message.emit("體力上限提升！")
 
 	return {
 		"id": id,
@@ -501,4 +637,141 @@ func render_inventory():
 func _on_use_item(item_id):
 	GameState.use_item(item_id)
 	render_inventory()
+	_update_ui()
+
+# --- Social Menu Helpers ---
+var social_actions_ref = {}
+
+func _build_social_menus(social_actions):
+	self.social_actions_ref = social_actions
+
+func add_npc_select_entry(char_id, label):
+	var act = {
+		"id": "sel_" + char_id,
+		"label": label,
+		"cost": {},
+		"effect": func(): _open_char_interaction(char_id)
+	}
+	actions_data["npc_select"].append(act)
+
+func _open_char_interaction(char_id):
+	GameState.location = "npc_interaction"
+	actions_data["npc_interaction"] = [] # Clear previous
+	
+	var char_name = GameState.characters[char_id].name
+	var affection = GameState.characters[char_id].affection
+	
+	GameState.log_message.emit("想對 %s 做什麼呢? (好感: %d)" % [char_name, affection])
+	
+	# 1. Chat (S01) - Always available
+	if social_actions_ref.has("S01"):
+		var base = social_actions_ref["S01"]
+		var act = base.duplicate()
+		act.label = "純聊天 (Chat)"
+		act.effect = func(): 
+			_npc_interact(char_id, 2, {"comm": 1, "san": -2})
+		actions_data["npc_interaction"].append(act)
+		
+	# 2. Treat Dinner (S02) - Affection >= 20
+	if affection >= 20 and social_actions_ref.has("S02"):
+		var base = social_actions_ref["S02"]
+		var act = base.duplicate()
+		act.label = "請客吃飯 (Dinner)"
+		act.effect = func():
+			_npc_interact(char_id, 10, {}) # +10 Affection
+			GameState.log_message.emit("吃了一頓大餐！")
+		actions_data["npc_interaction"].append(act)
+		
+	# 3. Take Home (R02) - Affection >= 100
+	if affection >= 100 and social_actions_ref.has("R02"):
+		var base = social_actions_ref["R02"]
+		var act = base.duplicate()
+		act.label = "帶回家 (Take Home)"
+		act.effect = func():
+			_npc_interact(char_id, 50, {}) 
+			GameState.log_message.emit("...度過了一個美好的夜晚。")
+			change_location("home") # Go home after?
+		actions_data["npc_interaction"].append(act)
+
+	# Return Button
+	add_nav_action("npc_interaction", "back_npc", "返回 (Back)", "npc_select", 0)
+	
+	change_location("npc_interaction")
+
+# --- Project Board Logic (Waterfall) ---
+func _open_project_board():
+	GameState.location = "project_board"
+	actions_data["project_board"] = []
+	
+	# Targets
+	var target_per_stage = GameConstants.project_target / 3.0 # Approx 33k each
+	
+	# 1. Meeting (W03)
+	if project_action_defs.has("meeting"):
+		var base = project_action_defs["meeting"]
+		var act = base.duplicate()
+		var meet_pct = (GameState.prog_meeting / target_per_stage) * 100.0
+		
+		# Update Label with Progress
+		act.label = "%s\n%.1f%%" % [base.label, meet_pct]
+		
+		# Effect: Work on Meeting
+		act.effect = func(): _do_project_work("meeting", target_per_stage)
+		
+		# Add to list
+		actions_data["project_board"].append(act)
+	
+	# 2. Spec (W01) - Cap at Meeting %
+	if project_action_defs.has("spec"):
+		var base = project_action_defs["spec"]
+		var act = base.duplicate()
+		var spec_pct = (GameState.prog_spec / target_per_stage) * 100.0
+		var meet_pct = (GameState.prog_meeting / target_per_stage) * 100.0
+		
+		act.label = "%s\n%.1f%% (Max: %.1f%%)" % [base.label, spec_pct, meet_pct]
+		act.effect = func(): _do_project_work("spec", target_per_stage, meet_pct)
+		
+		actions_data["project_board"].append(act)
+	
+	# 3. Debug (W02) - Cap at Spec %
+	if project_action_defs.has("debug"):
+		var base = project_action_defs["debug"]
+		var act = base.duplicate()
+		var test_pct = (GameState.prog_test / target_per_stage) * 100.0
+		var spec_pct = (GameState.prog_spec / target_per_stage) * 100.0
+		
+		act.label = "%s\n%.1f%% (Max: %.1f%%)" % [base.label, test_pct, spec_pct]
+		act.effect = func(): _do_project_work("test", target_per_stage, spec_pct)
+		
+		actions_data["project_board"].append(act)
+
+	# Back
+	add_nav_action("project_board", "back_office", "返回辦公室", "office", 0)
+	
+	change_location("project_board")
+
+func _do_project_work(type, target, cap_pct = 100.0):
+	var progress = GameConstants.base_efficiency # 1000
+	var current_val = 0.0
+	
+	if type == "meeting": current_val = GameState.prog_meeting
+	elif type == "spec": current_val = GameState.prog_spec
+	elif type == "test": current_val = GameState.prog_test
+	
+	var current_pct = (current_val / target) * 100.0
+	
+	if current_pct >= cap_pct and cap_pct < 100.0:
+		GameState.log_message.emit("前置工作未完成，無法繼續推進！")
+		return
+	if current_pct >= 100.0:
+		GameState.log_message.emit("此階段已完成！")
+		return
+
+	# Apply Progress
+	if type == "meeting": GameState.prog_meeting += progress
+	elif type == "spec": GameState.prog_spec += progress
+	elif type == "test": GameState.prog_test += progress
+	
+	GameState.log_message.emit("專案進度推進... (+%.0f)" % progress)
+	_open_project_board() # Refresh UI
 	_update_ui()

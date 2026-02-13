@@ -208,4 +208,49 @@ layout_mode = 2
 size_flags_horizontal = 3
 columns = 4
 
+[node name="SleepPanel" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(300, 200)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="SleepPanel"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="SleepPanel/VBox"]
+layout_mode = 2
+text = "選擇起床時間 (Select Wake Up Time)"
+horizontal_alignment = 1
+
+[node name="SpinBox" type="SpinBox" parent="SleepPanel/VBox"]
+layout_mode = 2
+min_value = 1.0
+max_value = 24.0
+value = 7.0
+alignment = 1
+suffix = "點 (Hr)"
+
+[node name="HBox" type="HBoxContainer" parent="SleepPanel/VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="ConfirmBtn" type="Button" parent="SleepPanel/VBox/HBox"]
+layout_mode = 2
+text = "確認睡覺 (Sleep)"
+
+[node name="CancelBtn" type="Button" parent="SleepPanel/VBox/HBox"]
+layout_mode = 2
+text = "取消 (Cancel)"
+
 [connection signal="pressed" from="HBoxContainer/Main/Header/BreakpointBtn" to="." method="_on_breakpoint_toggle"]

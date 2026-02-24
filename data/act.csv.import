@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://co8rvv0ikg0f0"
+
+[deps]
+
+files=["res://data/act.耗時(分).translation", "res://data/act.體力.translation", "res://data/act.壓力.translation", "res://data/act.性慾.translation", "res://data/act.金錢.translation", "res://data/act.溝通力.translation", "res://data/act.技術力.translation", "res://data/act.抗壓力.translation", "res://data/act.魅力.translation", "res://data/act.邏輯.translation"]
+
+source_file="res://data/act.csv"
+dest_files=["res://data/act.耗時(分).translation", "res://data/act.體力.translation", "res://data/act.壓力.translation", "res://data/act.性慾.translation", "res://data/act.金錢.translation", "res://data/act.溝通力.translation", "res://data/act.技術力.translation", "res://data/act.抗壓力.translation", "res://data/act.魅力.translation", "res://data/act.邏輯.translation"]
+
+[params]
+
+compress=true
+delimiter=0

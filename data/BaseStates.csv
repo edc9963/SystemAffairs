@@ -1,0 +1,38 @@
+時間與週期設定 (Time & Cycle System),,,
+變數名稱 (Key),設定值 (Value),單位,說明 / 公式用途
+TOTAL_DAYS,30,天,專案總工期 (第一關標準長度)。
+HOURS_PER_DAY,24,小時,每日總時數。
+MINUTES_PER_DAY,1440,分,
+WORK_START_TIME,9:00,時間,標準上班打卡時間。
+WORK_END_TIME,18:00,時間,標準下班時間。
+OVERTIME_START,19:00,時間,超過此時間算「加班」，壓力(SAN) 消耗加倍。
+LATE_THRESHOLD,9:00,時間,超過此時間算遲到，扣全勤獎金。
+MIN_SLEEP_HOURS,8,小時,每日最低睡眠需求，低於此數值隔天會有 Debuff。
+玩家三維狀態 (Player Trinity Stats),,,
+變數名稱 (Key),設定值 (Value),單位,說明 / 公式用途
+【HP 體力】,,,
+MAX_HP,100,點,體力上限。
+HP_FAINT_THRESHOLD,0,點,歸零懲罰：觸發「過勞昏倒」事件。
+HP_RECOVERY_SLEEP,12.50%,/hr,睡眠每小時回復量。
+【SAN 壓力】,,,
+MAX_SAN,100,點,壓力上限 (崩潰值)。
+SAN_BREAKDOWN,100,點,滿值懲罰：觸發「精神崩潰」，強制結束回合或亂選選項。
+SAN_WARNING,80,點,警告線：超過此值，螢幕出現雜訊，無法進行精細工作。
+【LIBIDO 性慾】,,,
+MAX_LIBIDO,100,點,性慾上限。
+LIBIDO_PENALTY_THRESHOLD,80,點,色慾薰心線：超過此值，工作效率大幅下降。
+LIBIDO_SAGE_THRESHOLD,20,點,聖人模式線：低於此值，無法觸發調情/戀愛選項。
+LIBIDO_DAILY_GROWTH,15,點,每日自然增長值 (不包含事件觸發)。
+經濟與薪資模型 (Economy & Salary),,,
+變數名稱 (Key),設定值 (Value),單位,說明 / 公式用途
+BASE_SALARY,"45,000",TWD,月底薪 (資深 SA 行情)。
+STARTING_SAVINGS,"50,000",TWD,玩家初始存款 (救命錢)。
+FIXED_COST_RENT,"12,000",TWD,每月房租 (每月 1 號或 30 號強制扣除)。
+CREDIT_LIMIT_MULTIPLIER,1.5,倍率,"信用額度 = 底薪 * 1.5 (約 67,500)。"
+BANKRUPTCY_CHECK,-1,TWD,結算時若 (存款 - 帳單) < 0，觸發 BE。
+BONUS_PER_POINT,10,TWD,專案結束時，每 1 點進度點數轉換的獎金。
+專案與小遊戲平衡 (Project & Minigames),,,
+變數名稱 (Key),設定值 (Value),單位,說明 / 公式用途
+PROJECT_TARGET_POINTS,"100,000",分,30天內必須達到的總分 (S級評價)。
+MIN_PASS_POINTS,"60,000",分,30天內最低及格分數 (C級評價，不被開除)。
+BASE_WORK_EFFICIENCY,"1,000",分/hr,玩家選擇「工作1小時」產出的基準分數 (Lv1)。

@@ -1,0 +1,542 @@
+[gd_scene load_steps=6 format=3 uid="uid://b8x7y203q1w4"]
+
+[ext_resource type="Script" uid="uid://bnyq3466a8en8" path="res://scripts/MainGame.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bg_home_morning" path="res://background/home_morning.png" id="2_bg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_log"]
+bg_color = Color(0.2, 0.2, 0.2, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_bg"]
+bg_color = Color(0.12, 0.12, 0.12, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_fill"]
+bg_color = Color(0.65, 0.65, 0.65, 1)
+
+[node name="MainGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="BG" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BGOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="VBoxMain" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TopHBox" type="HBoxContainer" parent="VBoxMain"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Sidebar" type="VBoxContainer" parent="VBoxMain/TopHBox"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Margin" type="MarginContainer" parent="VBoxMain/TopHBox/Sidebar"]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+
+[node name="VBox" type="VBoxContainer" parent="VBoxMain/TopHBox/Sidebar/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TimeLabel" type="Label" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Day 1
+07:00 (Mon)"
+
+[node name="HSeparator" type="HSeparator" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox"]
+layout_mode = 2
+
+[node name="StatsContainer" type="VBoxContainer" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="MoneyLabel" type="Label" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/StatsContainer"]
+layout_mode = 2
+text = "Money: $50000"
+
+[node name="Spacer" type="Control" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/StatsContainer"]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+
+[node name="HPLabel" type="Label" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/StatsContainer"]
+layout_mode = 2
+text = "HP: 100/100 (100%)"
+
+[node name="HPBar" type="ProgressBar" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/StatsContainer"]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
+value = 100.0
+show_percentage = false
+
+[node name="SanLabel" type="Label" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/StatsContainer"]
+layout_mode = 2
+text = "SAN: 0/100 (0%)"
+
+[node name="SanBar" type="ProgressBar" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/StatsContainer"]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
+show_percentage = false
+
+[node name="LibidoLabel" type="Label" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/StatsContainer"]
+layout_mode = 2
+text = "Libido: 0/100 (0%)"
+
+[node name="LibidoBar" type="ProgressBar" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/StatsContainer"]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
+show_percentage = false
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox"]
+layout_mode = 2
+
+[node name="AttrContainer" type="GridContainer" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="CommLabel" type="Label" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/AttrContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Comm: 10"
+
+[node name="TechLabel" type="Label" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/AttrContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Tech: 10"
+
+[node name="CharmLabel" type="Label" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/AttrContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Charm: 10"
+
+[node name="LogicLabel" type="Label" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/AttrContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Logic: 10"
+
+[node name="ResLabel" type="Label" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/AttrContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Res: 10"
+
+[node name="AffectionContainer" type="VBoxContainer" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox"]
+visible = false
+layout_mode = 2
+
+[node name="JuniorLabel" type="Label" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/AffectionContainer"]
+layout_mode = 2
+text = "Junior: 10"
+
+[node name="PMLabel" type="Label" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/AffectionContainer"]
+layout_mode = 2
+text = "PM: 5"
+
+[node name="PeerLabel" type="Label" parent="VBoxMain/TopHBox/Sidebar/Margin/VBox/AffectionContainer"]
+layout_mode = 2
+text = "Peer: 0"
+
+[node name="MainArea" type="VBoxContainer" parent="VBoxMain/TopHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Margin" type="MarginContainer" parent="VBoxMain/TopHBox/MainArea"]
+layout_mode = 2
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="Header" type="HBoxContainer" parent="VBoxMain/TopHBox/MainArea/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="LocationLabel" type="Label" parent="VBoxMain/TopHBox/MainArea/Margin/Header"]
+layout_mode = 2
+text = "家 (Home)"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxMain/TopHBox/MainArea/Margin/Header"]
+layout_mode = 2
+
+[node name="ProjectLabel" type="Label" parent="VBoxMain/TopHBox/MainArea/Margin/Header/HBoxContainer"]
+layout_mode = 2
+text = "Project: [Meeting]"
+
+[node name="ProjectBar" type="ProgressBar" parent="VBoxMain/TopHBox/MainArea/Margin/Header/HBoxContainer"]
+custom_minimum_size = Vector2(120, 15)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
+
+[node name="Spacer" type="Control" parent="VBoxMain/TopHBox/MainArea/Margin/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CharacterBtn" type="Button" parent="VBoxMain/TopHBox/MainArea/Margin/Header"]
+layout_mode = 2
+text = "角色狀態"
+
+[node name="BackpackBtn" type="Button" parent="VBoxMain/TopHBox/MainArea/Margin/Header"]
+layout_mode = 2
+text = "背包 (0)"
+
+[node name="BreakpointBtn" type="Button" parent="VBoxMain/TopHBox/MainArea/Margin/Header"]
+layout_mode = 2
+text = "SYSTEM BREAKPOINT"
+
+[node name="Margin2" type="MarginContainer" parent="VBoxMain/TopHBox/MainArea"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+
+[node name="ActionGrid" type="GridContainer" parent="VBoxMain/TopHBox/MainArea/Margin2"]
+layout_mode = 2
+columns = 3
+theme_override_constants/h_separation = 15
+theme_override_constants/v_separation = 15
+
+[node name="LogPanel" type="PanelContainer" parent="VBoxMain"]
+custom_minimum_size = Vector2(0, 180)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_log")
+
+[node name="Margin" type="MarginContainer" parent="VBoxMain/LogPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 15
+
+[node name="VBox" type="VBoxContainer" parent="VBoxMain/LogPanel/Margin"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxMain/LogPanel/Margin/VBox"]
+layout_mode = 2
+text = "System Log"
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+
+[node name="RichTextLabel" type="RichTextLabel" parent="VBoxMain/LogPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "System Log Loaded..."
+scroll_following = true
+
+[node name="InventoryPanel" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(400, 300)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="InventoryPanel"]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="InventoryPanel/VBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="InventoryPanel/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Backpack"
+
+[node name="CloseBtn" type="Button" parent="InventoryPanel/VBox/Header"]
+layout_mode = 2
+text = "X"
+
+[node name="Scroll" type="ScrollContainer" parent="InventoryPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ItemGrid" type="GridContainer" parent="InventoryPanel/VBox/Scroll"]
+layout_mode = 2
+columns = 4
+
+[node name="CharacterPanel" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(700, 500)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -250.0
+offset_right = 350.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BG" type="ColorRect" parent="CharacterPanel"]
+layout_mode = 2
+color = Color(0.18, 0.18, 0.18, 1)
+
+[node name="Margin" type="MarginContainer" parent="CharacterPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="CharacterPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Header" type="HBoxContainer" parent="CharacterPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CharacterPanel/Margin/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "角色狀態與好感度"
+
+[node name="CloseBtn" type="Button" parent="CharacterPanel/Margin/VBox/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = " X "
+flat = true
+
+[node name="HSeparator" type="HSeparator" parent="CharacterPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="Grid" type="GridContainer" parent="CharacterPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+
+[node name="CharPlayer" type="ColorRect" parent="CharacterPanel/Margin/VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(0.22, 0.22, 0.22, 1)
+
+[node name="VBox" type="VBoxContainer" parent="CharacterPanel/Margin/VBox/Grid/CharPlayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="EmojiLabel" type="Label" parent="CharacterPanel/Margin/VBox/Grid/CharPlayer/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 50
+text = "👱"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="CharacterPanel/Margin/VBox/Grid/CharPlayer/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "主角"
+horizontal_alignment = 1
+
+[node name="DescLabel" type="Label" parent="CharacterPanel/Margin/VBox/Grid/CharPlayer/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+text = "Player"
+horizontal_alignment = 1
+
+[node name="CharJunior" type="ColorRect" parent="CharacterPanel/Margin/VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(0.22, 0.22, 0.22, 1)
+
+[node name="VBox" type="VBoxContainer" parent="CharacterPanel/Margin/VBox/Grid/CharJunior"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="EmojiLabel" type="Label" parent="CharacterPanel/Margin/VBox/Grid/CharJunior/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 50
+text = "👩"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="CharacterPanel/Margin/VBox/Grid/CharJunior/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "後輩"
+horizontal_alignment = 1
+
+[node name="AffLabel" type="RichTextLabel" parent="CharacterPanel/Margin/VBox/Grid/CharJunior/VBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+bbcode_enabled = true
+text = "[center][color=#ff99cc]好感度:[/color] 10[/center]"
+fit_content = true
+
+[node name="CharPM" type="ColorRect" parent="CharacterPanel/Margin/VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(0.22, 0.22, 0.22, 1)
+
+[node name="VBox" type="VBoxContainer" parent="CharacterPanel/Margin/VBox/Grid/CharPM"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="EmojiLabel" type="Label" parent="CharacterPanel/Margin/VBox/Grid/CharPM/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 50
+text = "👩‍💼"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="CharacterPanel/Margin/VBox/Grid/CharPM/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "PM"
+horizontal_alignment = 1
+
+[node name="AffLabel" type="RichTextLabel" parent="CharacterPanel/Margin/VBox/Grid/CharPM/VBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+bbcode_enabled = true
+text = "[center][color=#ff99cc]好感度:[/color] 5[/center]"
+fit_content = true
+
+[node name="CharPeer" type="ColorRect" parent="CharacterPanel/Margin/VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(0.22, 0.22, 0.22, 1)
+
+[node name="VBox" type="VBoxContainer" parent="CharacterPanel/Margin/VBox/Grid/CharPeer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="EmojiLabel" type="Label" parent="CharacterPanel/Margin/VBox/Grid/CharPeer/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 50
+text = "👸"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="CharacterPanel/Margin/VBox/Grid/CharPeer/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "千金"
+horizontal_alignment = 1
+
+[node name="AffLabel" type="RichTextLabel" parent="CharacterPanel/Margin/VBox/Grid/CharPeer/VBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+bbcode_enabled = true
+text = "[center][color=#ff99cc]好感度:[/color] 0[/center]"
+fit_content = true
+
+[node name="SleepPanel" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(300, 200)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="SleepPanel"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="SleepPanel/VBox"]
+layout_mode = 2
+text = "選擇起床時間"
+horizontal_alignment = 1
+
+[node name="SpinBox" type="SpinBox" parent="SleepPanel/VBox"]
+layout_mode = 2
+min_value = 1.0
+max_value = 24.0
+value = 7.0
+alignment = 1
+suffix = "點"
+
+[node name="HBox" type="HBoxContainer" parent="SleepPanel/VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="ConfirmBtn" type="Button" parent="SleepPanel/VBox/HBox"]
+layout_mode = 2
+text = "確認睡覺"
+
+[node name="CancelBtn" type="Button" parent="SleepPanel/VBox/HBox"]
+layout_mode = 2
+text = "取消"
+
+[connection signal="pressed" from="VBoxMain/TopHBox/MainArea/Margin/Header/BreakpointBtn" to="." method="_on_breakpoint_toggle"]

@@ -1,41 +1,68 @@
 extends Control
 
 # UI References
-@onready var action_container = $HBoxContainer/Main/ActionGrid
-@onready var log_label = $HBoxContainer/LogPanel/RichTextLabel
-@onready var location_label = $HBoxContainer/Main/Header/LocationLabel
-@onready var time_label = $HBoxContainer/Main/Header/TimeLabel
-@onready var breakpoint_btn = $HBoxContainer/Main/Header/BreakpointBtn
+@onready var action_container = $VBoxMain/TopHBox/MainArea/Margin2/ActionGrid
+@onready var log_label = $VBoxMain/LogPanel/Margin/VBox/RichTextLabel
+@onready var location_label = $VBoxMain/TopHBox/MainArea/Margin/Header/LocationLabel
+@onready var time_label = $VBoxMain/TopHBox/Sidebar/Margin/VBox/TimeLabel
+@onready var breakpoint_btn = $VBoxMain/TopHBox/MainArea/Margin/Header/BreakpointBtn
+@onready var log_panel = $VBoxMain/LogPanel
+@onready var bg_rect = $BG
+var log_timer: Timer
+
+# Background Images
+var bg_images = {
+	"home_morning": preload("res://background/home_morning.png"),
+	"home_night": preload("res://background/home_night.png"),
+	"office_morning": preload("res://background/office_morning.png"),
+	"office_night": preload("res://background/office_night.png"),
+	"bar": preload("res://background/bar.png"),
+	"cvs_morning": preload("res://background/convenience_store_morning.png"),
+	"cvs_night": preload("res://background/convenience_store_morning_night.png"),
+	"gym_morning": preload("res://background/gym_morning.png"),
+	"gym_night": preload("res://background/gym_night.png"),
+	"temple_morning": preload("res://background/temple_morning.png"),
+	"temple_night": preload("res://background/temple_night.png")
+}
 
 # Stats References
-@onready var money_label = $HBoxContainer/Sidebar/StatsContainer/MoneyLabel
-@onready var hp_bar = $HBoxContainer/Sidebar/StatsContainer/HPBar
-@onready var san_bar = $HBoxContainer/Sidebar/StatsContainer/SanBar
-@onready var libido_bar = $HBoxContainer/Sidebar/StatsContainer/LibidoBar
-@onready var project_bar = $HBoxContainer/Sidebar/ProjectBar
-@onready var project_label = $HBoxContainer/Sidebar/ProjectLabel
+@onready var money_label = $VBoxMain/TopHBox/Sidebar/Margin/VBox/StatsContainer/MoneyLabel
+@onready var hp_bar = $VBoxMain/TopHBox/Sidebar/Margin/VBox/StatsContainer/HPBar
+@onready var san_bar = $VBoxMain/TopHBox/Sidebar/Margin/VBox/StatsContainer/SanBar
+@onready var libido_bar = $VBoxMain/TopHBox/Sidebar/Margin/VBox/StatsContainer/LibidoBar
+@onready var project_bar = $VBoxMain/TopHBox/MainArea/Margin/Header/HBoxContainer/ProjectBar
+@onready var project_label = $VBoxMain/TopHBox/MainArea/Margin/Header/HBoxContainer/ProjectLabel
 
 @onready var attr_labels = {
-	"comm": $HBoxContainer/Sidebar/AttrContainer/CommLabel,
-	"tech": $HBoxContainer/Sidebar/AttrContainer/TechLabel,
-	"charm": $HBoxContainer/Sidebar/AttrContainer/CharmLabel,
-	"logic": $HBoxContainer/Sidebar/AttrContainer/LogicLabel,
-	"res": $HBoxContainer/Sidebar/AttrContainer/ResLabel
+	"comm": $VBoxMain/TopHBox/Sidebar/Margin/VBox/AttrContainer/CommLabel,
+	"tech": $VBoxMain/TopHBox/Sidebar/Margin/VBox/AttrContainer/TechLabel,
+	"charm": $VBoxMain/TopHBox/Sidebar/Margin/VBox/AttrContainer/CharmLabel,
+	"logic": $VBoxMain/TopHBox/Sidebar/Margin/VBox/AttrContainer/LogicLabel,
+	"res": $VBoxMain/TopHBox/Sidebar/Margin/VBox/AttrContainer/ResLabel
 }
 
 # Affection References
 @onready var aff_labels = {
-	"junior": $HBoxContainer/Sidebar/AffectionContainer/JuniorLabel,
-	"pm": $HBoxContainer/Sidebar/AffectionContainer/PMLabel,
-	"peer": $HBoxContainer/Sidebar/AffectionContainer/PeerLabel
+	"junior": $VBoxMain/TopHBox/Sidebar/Margin/VBox/AffectionContainer/JuniorLabel,
+	"pm": $VBoxMain/TopHBox/Sidebar/Margin/VBox/AffectionContainer/PMLabel,
+	"peer": $VBoxMain/TopHBox/Sidebar/Margin/VBox/AffectionContainer/PeerLabel
 }
 
 # Inventory References
-@onready var backpack_btn = $HBoxContainer/Sidebar/BackpackBtn
+@onready var backpack_btn = $VBoxMain/TopHBox/MainArea/Margin/Header/BackpackBtn
 @onready var inv_panel = $InventoryPanel
 @onready var inv_grid = $InventoryPanel/VBox/Scroll/ItemGrid
 @onready var inv_close_btn = $InventoryPanel/VBox/Header/CloseBtn
 
+# Character Panel References
+@onready var character_btn = $VBoxMain/TopHBox/MainArea/Margin/Header/CharacterBtn
+@onready var char_panel = $CharacterPanel
+@onready var char_close_btn = $CharacterPanel/Margin/VBox/Header/CloseBtn
+@onready var popup_aff_labels = {
+	"junior": $CharacterPanel/Margin/VBox/Grid/CharJunior/VBox/AffLabel,
+	"pm": $CharacterPanel/Margin/VBox/Grid/CharPM/VBox/AffLabel,
+	"peer": $CharacterPanel/Margin/VBox/Grid/CharPeer/VBox/AffLabel
+}
 @onready var sleep_panel = $SleepPanel
 @onready var sleep_spin = $SleepPanel/VBox/SpinBox
 @onready var sleep_confirm = $SleepPanel/VBox/HBox/ConfirmBtn
@@ -49,6 +76,12 @@ func _ready():
 	GameState.time_changed.connect(_update_ui)
 	GameState.stats_changed.connect(_update_ui)
 	
+	log_panel.visible = false
+	log_timer = Timer.new()
+	log_timer.one_shot = true
+	log_timer.wait_time = 4.0
+	log_timer.timeout.connect(_hide_log)
+	add_child(log_timer)
 	setup_actions_from_csv()
 	render_actions()
 	_update_ui()
@@ -56,11 +89,29 @@ func _ready():
 	if backpack_btn: backpack_btn.pressed.connect(_on_backpack_btn_pressed)
 	if inv_close_btn: inv_close_btn.pressed.connect(_on_inventory_close_pressed)
 
+	if character_btn: character_btn.pressed.connect(_on_character_btn_pressed)
+	if char_close_btn: char_close_btn.pressed.connect(_on_char_close_pressed)
+
 	if sleep_confirm: sleep_confirm.pressed.connect(_on_sleep_confirm_pressed)
 	if sleep_cancel: sleep_cancel.pressed.connect(_on_sleep_cancel_pressed)
 
+func _on_character_btn_pressed():
+	if char_panel.visible:
+		char_panel.visible = false
+	else:
+		_update_ui()
+		char_panel.visible = true
+
+func _on_char_close_pressed():
+	char_panel.visible = false
+
+func _hide_log():
+	log_panel.visible = false
+
 func _on_log_message(msg):
 	log_label.append_text("> " + msg + "\n")
+	log_panel.visible = true
+	log_timer.start()
 
 func _update_ui():
 	# Header
@@ -71,6 +122,7 @@ func _update_ui():
 	time_label.text = "%s\n%s (%s)" % [day_str, time_str, wkd_str]
 	location_label.text = get_location_name(GameState.location)
 	
+	# Breakpoint System Style override
 	if GameState.is_breakpoint_active:
 		breakpoint_btn.text = "RESUME TIME"
 		modulate = Color(0.5, 0.5, 0.5)
@@ -78,25 +130,29 @@ func _update_ui():
 		breakpoint_btn.text = "SYSTEM BREAKPOINT"
 		modulate = Color(1, 1, 1)
 
+	_update_background()
+
 	# Stats
 	money_label.text = "Money: $%d" % GameState.money
+	
+	var stats = $VBoxMain/TopHBox/Sidebar/Margin/VBox/StatsContainer
 	
 	hp_bar.max_value = GameState.max_hp
 	hp_bar.value = GameState.hp
 	var hp_pct = (GameState.hp/GameState.max_hp)*100
-	$HBoxContainer/Sidebar/StatsContainer/HPLabel.text = "HP: %.0f/%.0f (%.0f%%)" % [
+	stats.get_node("HPLabel").text = "HP: %.0f/%.0f (%.0f%%)" % [
 		GameState.hp, GameState.max_hp, hp_pct]
 	
 	san_bar.max_value = GameState.max_san
 	san_bar.value = GameState.san
 	var san_pct = (GameState.san/GameState.max_san)*100
-	$HBoxContainer/Sidebar/StatsContainer/SanLabel.text = "SAN: %.0f/%.0f (%.0f%%)" % [
+	stats.get_node("SanLabel").text = "SAN: %.0f/%.0f (%.0f%%)" % [
 		GameState.san, GameState.max_san, san_pct]
 	
 	libido_bar.max_value = GameState.max_libido
 	libido_bar.value = GameState.libido
 	var lib_pct = (GameState.libido/GameState.max_libido)*100
-	$HBoxContainer/Sidebar/StatsContainer/LibidoLabel.text = "Libido: %.0f/%.0f (%.0f%%)" % [
+	stats.get_node("LibidoLabel").text = "Libido: %.0f/%.0f (%.0f%%)" % [
 		GameState.libido, GameState.max_libido, lib_pct]
 	
 	# Waterfall Project Progress
@@ -128,6 +184,12 @@ func _update_ui():
 		if GameState.characters.has(key):
 			var char_data = GameState.characters[key]
 			aff_labels[key].text = "%s: %d" % [char_data.name, char_data.affection]
+	if popup_aff_labels != null:
+		for key in popup_aff_labels:
+			if GameState.characters.has(key):
+				var char_data = GameState.characters[key]
+				var aff = char_data.affection
+				popup_aff_labels[key].text = "[center][color=#ff99cc]好感度:[/color] %d[/center]" % aff
 
 	# Backpack
 	var item_count = 0
@@ -276,6 +338,33 @@ func change_location(new_loc):
 	GameState.log_message.emit("移動至 " + get_location_name(new_loc))
 	render_actions()
 	_update_ui()
+	_update_background()
+
+func _update_background():
+	var loc = GameState.location
+	var hour = GameState.time.hour
+	var is_night = hour >= 18 or hour < 6
+	
+	if loc == "home" or loc == "wakeup_mode":
+		if is_night: bg_rect.texture = bg_images["home_night"]
+		else: bg_rect.texture = bg_images["home_morning"]
+	elif loc == "office" or loc == "project_board":
+		if is_night: bg_rect.texture = bg_images["office_night"]
+		else: bg_rect.texture = bg_images["office_morning"]
+	elif loc == "bar":
+		bg_rect.texture = bg_images["bar"]
+	elif loc == "cvs":
+		if is_night: bg_rect.texture = bg_images["cvs_night"]
+		else: bg_rect.texture = bg_images["cvs_morning"]
+	elif loc == "gym":
+		if is_night: bg_rect.texture = bg_images["gym_night"]
+		else: bg_rect.texture = bg_images["gym_morning"]
+	elif loc == "temple":
+		if is_night: bg_rect.texture = bg_images["temple_night"]
+		else: bg_rect.texture = bg_images["temple_morning"]
+	else:
+		# Fallback to a default if missing
+		bg_rect.texture = bg_images["office_morning"]
 
 # --- Effect Functions ---
 func _eff_spec():

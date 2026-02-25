@@ -221,6 +221,10 @@ text = "背包 (0)"
 layout_mode = 2
 text = "SYSTEM BREAKPOINT"
 
+[node name="SystemBtn" type="Button" parent="VBoxMain/TopHBox/MainArea/Margin/Header"]
+layout_mode = 2
+text = "系統"
+
 [node name="Margin2" type="MarginContainer" parent="VBoxMain/TopHBox/MainArea"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -539,4 +543,233 @@ text = "確認睡覺"
 layout_mode = 2
 text = "取消"
 
+[node name="SystemPanel" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(500, 350)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -175.0
+offset_right = 250.0
+offset_bottom = 175.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="SystemPanel"]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="SystemPanel/VBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SystemPanel/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "系統選單"
+
+[node name="CloseBtn" type="Button" parent="SystemPanel/VBox/Header"]
+layout_mode = 2
+text = " X "
+
+[node name="TabContainer" type="TabContainer" parent="SystemPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Save" type="VBoxContainer" parent="SystemPanel/VBox/TabContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SaveSlotAuto" type="Button" parent="SystemPanel/VBox/TabContainer/Save"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "自動存檔 (不可手動覆蓋)"
+disabled = true
+
+[node name="HBox1" type="HBoxContainer" parent="SystemPanel/VBox/TabContainer/Save"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SaveSlot1" type="Button" parent="SystemPanel/VBox/TabContainer/Save/HBox1"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "存檔 1"
+
+[node name="DelBtn1" type="Button" parent="SystemPanel/VBox/TabContainer/Save/HBox1"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "刪除"
+
+[node name="HBox2" type="HBoxContainer" parent="SystemPanel/VBox/TabContainer/Save"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SaveSlot2" type="Button" parent="SystemPanel/VBox/TabContainer/Save/HBox2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "存檔 2"
+
+[node name="DelBtn2" type="Button" parent="SystemPanel/VBox/TabContainer/Save/HBox2"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "刪除"
+
+[node name="HBox3" type="HBoxContainer" parent="SystemPanel/VBox/TabContainer/Save"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SaveSlot3" type="Button" parent="SystemPanel/VBox/TabContainer/Save/HBox3"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "存檔 3"
+
+[node name="DelBtn3" type="Button" parent="SystemPanel/VBox/TabContainer/Save/HBox3"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "刪除"
+
+[node name="Load" type="VBoxContainer" parent="SystemPanel/VBox/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LoadSlotAuto" type="Button" parent="SystemPanel/VBox/TabContainer/Load"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "讀取 自動存檔"
+
+[node name="HBox1" type="HBoxContainer" parent="SystemPanel/VBox/TabContainer/Load"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LoadSlot1" type="Button" parent="SystemPanel/VBox/TabContainer/Load/HBox1"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "讀取 存檔 1"
+
+[node name="DelBtn1" type="Button" parent="SystemPanel/VBox/TabContainer/Load/HBox1"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "刪除"
+
+[node name="HBox2" type="HBoxContainer" parent="SystemPanel/VBox/TabContainer/Load"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LoadSlot2" type="Button" parent="SystemPanel/VBox/TabContainer/Load/HBox2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "讀取 存檔 2"
+
+[node name="DelBtn2" type="Button" parent="SystemPanel/VBox/TabContainer/Load/HBox2"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "刪除"
+
+[node name="HBox3" type="HBoxContainer" parent="SystemPanel/VBox/TabContainer/Load"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LoadSlot3" type="Button" parent="SystemPanel/VBox/TabContainer/Load/HBox3"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "讀取 存檔 3"
+
+[node name="DelBtn3" type="Button" parent="SystemPanel/VBox/TabContainer/Load/HBox3"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "刪除"
+
+[node name="FaintPanel" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(400, 200)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -100.0
+offset_right = 200.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="FaintPanel"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="FaintPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 24
+text = "體力透支！"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="FaintPanel/VBox"]
+layout_mode = 2
+text = "你眼前一黑，失去了意識...
+被救護車送到了醫院。"
+horizontal_alignment = 1
+
+[node name="ConfirmBtn" type="Button" parent="FaintPanel/VBox"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "支付醫療費並回家"
+
 [connection signal="pressed" from="VBoxMain/TopHBox/MainArea/Margin/Header/BreakpointBtn" to="." method="_on_breakpoint_toggle"]
+
+[node name="MainMenuPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="MainMenuPanel"]
+layout_mode = 2
+color = Color(0.12, 0.12, 0.12, 1)
+
+[node name="VBox" type="VBoxContainer" parent="MainMenuPanel"]
+layout_mode = 2
+alignment = 1
+
+[node name="Title" type="Label" parent="MainMenuPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 64
+text = "System Affairs"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="MainMenuPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+text = "系統關係師 V1.0"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="MainMenuPanel/VBox"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+
+[node name="NewGameBtn" type="Button" parent="MainMenuPanel/VBox"]
+custom_minimum_size = Vector2(300, 70)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 28
+text = "新遊戲 (New Game)"
+
+[node name="Spacer2" type="Control" parent="MainMenuPanel/VBox"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="ContinueBtn" type="Button" parent="MainMenuPanel/VBox"]
+custom_minimum_size = Vector2(300, 70)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 28
+text = "繼續遊戲 (Continue)"

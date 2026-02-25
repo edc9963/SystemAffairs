@@ -3,6 +3,9 @@ extends Node
 signal stats_changed
 signal time_changed
 signal log_message(msg)
+signal player_fainted
+
+var skip_main_menu: bool = false
 
 var hp: float = GameConstants.max_hp
 var max_hp: float = GameConstants.max_hp
@@ -117,6 +120,10 @@ func daily_reset():
 		log_message.emit("扣除房租 $" + str(GameConstants.fixed_cost_rent))
 	
 	log_message.emit("Day " + str(time.day) + " 開始。")
+	
+	var slm = get_node_or_null("/root/SaveLoadManager")
+	if slm:
+		slm.save_game("auto")
 
 func modify_money(amount: int):
 	money += amount
@@ -139,13 +146,80 @@ func modify_stat(stat_name: String, value: float):
 
 func trigger_faint():
 	log_message.emit("體力歸零！昏倒送醫...")
-	modify_money(-1000)
-	time.day += 1
-	time.hour = 12
-	hp = 50
-	time_changed.emit()
+	player_fainted.emit()
 
 func trigger_breakdown():
 	log_message.emit("精神崩潰 (SAN 100)！強制休息...")
 	san = 80
 	stats_changed.emit()
+
+func reset_to_default():
+	hp = GameConstants.max_hp
+	max_hp = GameConstants.max_hp
+	san = 0.0
+	max_san = GameConstants.max_san
+	libido = 0.0
+	max_libido = GameConstants.max_libido
+	money = GameConstants.starting_savings
+	
+	attributes = {
+		"comm": 10, "tech": 10, "res": 10, "charm": 10, "logic": 10
+	}
+	time = {
+		"day": 1, "hour": 7, "minute": 0, "weekday": 1
+	}
+	location = "home"
+	is_breakpoint_active = false
+	project_progress = 0.0
+	prog_meeting = 0.0
+	prog_spec = 0.0
+	prog_test = 0.0
+	
+	characters = {
+		"junior": {"name": "學妹", "affection": 10, "depravity": 0},
+		"pm": {"name": "PM", "affection": 5, "depravity": 0},
+		"peer": {"name": "隱藏千金", "affection": 0, "depravity": 0}
+	}
+	inventory = {}
+	
+	stats_changed.emit()
+	time_changed.emit()
+
+func get_save_data() -> Dictionary:
+	return {
+		"hp": hp,
+		"san": san,
+		"libido": libido,
+		"money": money,
+		"attributes": attributes.duplicate(true),
+		"time": time.duplicate(true),
+		"location": location,
+		"is_breakpoint_active": is_breakpoint_active,
+		"prog_meeting": prog_meeting,
+		"prog_spec": prog_spec,
+		"prog_test": prog_test,
+		"characters": characters.duplicate(true),
+		"inventory": inventory.duplicate(true)
+	}
+
+func load_save_data(data: Dictionary):
+	if data.has("hp"): hp = data["hp"]
+	if data.has("san"): san = data["san"]
+	if data.has("libido"): libido = data["libido"]
+	if data.has("money"): money = data["money"]
+	if data.has("attributes"): attributes = data["attributes"]
+	if data.has("time"): time = data["time"]
+	if data.has("location"): location = data["location"]
+	if data.has("is_breakpoint_active"): is_breakpoint_active = data["is_breakpoint_active"]
+	if data.has("prog_meeting"): prog_meeting = data["prog_meeting"]
+	if data.has("prog_spec"): prog_spec = data["prog_spec"]
+	if data.has("prog_test"): prog_test = data["prog_test"]
+	if data.has("characters"): characters = data["characters"]
+	if data.has("inventory"): inventory = data["inventory"]
+	
+	hp = clamp(hp, 0, max_hp)
+	san = clamp(san, 0, max_san)
+	libido = clamp(libido, 0, max_libido)
+	
+	stats_changed.emit()
+	time_changed.emit()

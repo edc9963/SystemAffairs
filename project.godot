@@ -12,7 +12,7 @@ config_version=5
 
 config/name="System Affairs"
 config/description="V1.04 Game Sample"
-run/main_scene="res://scenes/Prologue.tscn"
+run/main_scene="res://scenes/MainScene.tscn"
 config/features=PackedStringArray("4.5")
 config/icon="res://icon.svg"
 
@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 
 GameConstants="*res://scripts/GameConstants.gd"
 GameState="*res://scripts/GameState.gd"
+SaveLoadManager="*res://scripts/SaveLoadManager.gd"
 
 [display]
 

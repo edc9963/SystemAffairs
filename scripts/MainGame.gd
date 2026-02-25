@@ -12,17 +12,17 @@ var log_timer: Timer
 
 # Background Images
 var bg_images = {
-	"home_morning": preload("res://background/home_morning.png"),
-	"home_night": preload("res://background/home_night.png"),
-	"office_morning": preload("res://background/office_morning.png"),
-	"office_night": preload("res://background/office_night.png"),
-	"bar": preload("res://background/bar.png"),
-	"cvs_morning": preload("res://background/convenience_store_morning.png"),
-	"cvs_night": preload("res://background/convenience_store_morning_night.png"),
-	"gym_morning": preload("res://background/gym_morning.png"),
-	"gym_night": preload("res://background/gym_night.png"),
-	"temple_morning": preload("res://background/temple_morning.png"),
-	"temple_night": preload("res://background/temple_night.png")
+	"home_morning": load("res://background/home_morning.png"),
+	"home_night": load("res://background/home_night.png"),
+	"office_morning": load("res://background/office_morning.png"),
+	"office_night": load("res://background/office_night.png"),
+	"bar": load("res://background/bar.png"),
+	"cvs_morning": load("res://background/convenience_store_morning.png"),
+	"cvs_night": load("res://background/convenience_store_morning_night.png"),
+	"gym_morning": load("res://background/gym_morning.png"),
+	"gym_night": load("res://background/gym_night.png"),
+	"temple_morning": load("res://background/temple_morning.png"),
+	"temple_night": load("res://background/temple_night.png")
 }
 
 # Stats References
@@ -68,13 +68,47 @@ var bg_images = {
 @onready var sleep_confirm = $SleepPanel/VBox/HBox/ConfirmBtn
 @onready var sleep_cancel = $SleepPanel/VBox/HBox/CancelBtn
 
+# System Panel References
+@onready var system_btn = $VBoxMain/TopHBox/MainArea/Margin/Header/SystemBtn
+@onready var sys_panel = $SystemPanel
+@onready var sys_close_btn = $SystemPanel/VBox/Header/CloseBtn
+
+@onready var save_btn_1 = $SystemPanel/VBox/TabContainer/Save/HBox1/SaveSlot1
+@onready var save_del_1 = $SystemPanel/VBox/TabContainer/Save/HBox1/DelBtn1
+@onready var save_btn_2 = $SystemPanel/VBox/TabContainer/Save/HBox2/SaveSlot2
+@onready var save_del_2 = $SystemPanel/VBox/TabContainer/Save/HBox2/DelBtn2
+@onready var save_btn_3 = $SystemPanel/VBox/TabContainer/Save/HBox3/SaveSlot3
+@onready var save_del_3 = $SystemPanel/VBox/TabContainer/Save/HBox3/DelBtn3
+
+@onready var load_btn_auto = $SystemPanel/VBox/TabContainer/Load/LoadSlotAuto
+
+@onready var load_btn_1 = $SystemPanel/VBox/TabContainer/Load/HBox1/LoadSlot1
+@onready var load_del_1 = $SystemPanel/VBox/TabContainer/Load/HBox1/DelBtn1
+@onready var load_btn_2 = $SystemPanel/VBox/TabContainer/Load/HBox2/LoadSlot2
+@onready var load_del_2 = $SystemPanel/VBox/TabContainer/Load/HBox2/DelBtn2
+@onready var load_btn_3 = $SystemPanel/VBox/TabContainer/Load/HBox3/LoadSlot3
+@onready var load_del_3 = $SystemPanel/VBox/TabContainer/Load/HBox3/DelBtn3
+
+# Faint Panel References
+@onready var faint_panel = $FaintPanel
+@onready var faint_confirm_btn = $FaintPanel/VBox/ConfirmBtn
+
+# Main Menu References
+@onready var main_menu_panel = $MainMenuPanel
+@onready var mm_new_game = $MainMenuPanel/VBox/NewGameBtn
+@onready var mm_continue = $MainMenuPanel/VBox/ContinueBtn
+
 var actions_data = {}
 var project_action_defs = {}
+
+var pending_exhaustion_action_id = ""
+var game_started = false
 
 func _ready():
 	GameState.log_message.connect(_on_log_message)
 	GameState.time_changed.connect(_update_ui)
 	GameState.stats_changed.connect(_update_ui)
+	GameState.player_fainted.connect(_on_player_fainted)
 	
 	log_panel.visible = false
 	log_timer = Timer.new()
@@ -94,6 +128,62 @@ func _ready():
 
 	if sleep_confirm: sleep_confirm.pressed.connect(_on_sleep_confirm_pressed)
 	if sleep_cancel: sleep_cancel.pressed.connect(_on_sleep_cancel_pressed)
+	
+	if system_btn: system_btn.pressed.connect(_on_system_btn_pressed)
+	if sys_close_btn: sys_close_btn.pressed.connect(_on_sys_close_pressed)
+	
+	if save_btn_1: save_btn_1.pressed.connect(_on_save_slot_pressed.bind("1"))
+	if save_btn_2: save_btn_2.pressed.connect(_on_save_slot_pressed.bind("2"))
+	if save_btn_3: save_btn_3.pressed.connect(_on_save_slot_pressed.bind("3"))
+	
+	if load_btn_auto: load_btn_auto.pressed.connect(_on_load_slot_pressed.bind("auto"))
+	if load_btn_1: load_btn_1.pressed.connect(_on_load_slot_pressed.bind("1"))
+	if load_btn_2: load_btn_2.pressed.connect(_on_load_slot_pressed.bind("2"))
+	if load_btn_3: load_btn_3.pressed.connect(_on_load_slot_pressed.bind("3"))
+	
+	if save_del_1: save_del_1.pressed.connect(_on_delete_slot_pressed.bind("1"))
+	if save_del_2: save_del_2.pressed.connect(_on_delete_slot_pressed.bind("2"))
+	if save_del_3: save_del_3.pressed.connect(_on_delete_slot_pressed.bind("3"))
+	if load_del_1: load_del_1.pressed.connect(_on_delete_slot_pressed.bind("1"))
+	if load_del_2: load_del_2.pressed.connect(_on_delete_slot_pressed.bind("2"))
+	if load_del_3: load_del_3.pressed.connect(_on_delete_slot_pressed.bind("3"))
+	
+	if faint_confirm_btn: faint_confirm_btn.pressed.connect(_on_faint_confirm_pressed)
+	if mm_new_game: mm_new_game.pressed.connect(_on_new_game_pressed)
+	if mm_continue: mm_continue.pressed.connect(_on_continue_pressed)
+	
+	if GameState.skip_main_menu:
+		main_menu_panel.visible = false
+		game_started = true
+	else:
+		main_menu_panel.visible = true
+
+func _on_new_game_pressed():
+	GameState.reset_to_default()
+	GameState.skip_main_menu = true
+	get_tree().change_scene_to_file("res://scenes/Prologue.tscn")
+
+func _on_continue_pressed():
+	main_menu_panel.visible = false
+	_update_sys_panel_info()
+	sys_panel.visible = true
+	var tab_ct = $SystemPanel/VBox/TabContainer
+	tab_ct.current_tab = 1 # Switch to Load tab
+
+func _on_player_fainted():
+	_update_ui()
+	render_actions()
+	faint_panel.visible = true
+
+func _on_faint_confirm_pressed():
+	faint_panel.visible = false
+	GameState.modify_money(-1000)
+	GameState.time.day += 1
+	GameState.time.hour = 7
+	GameState.hp = 50
+	GameState.time_changed.emit()
+	GameState.stats_changed.emit()
+	change_location("home")
 
 func _on_character_btn_pressed():
 	if char_panel.visible:
@@ -112,6 +202,71 @@ func _on_log_message(msg):
 	log_label.append_text("> " + msg + "\n")
 	log_panel.visible = true
 	log_timer.start()
+
+func _on_system_btn_pressed():
+	if sys_panel.visible:
+		sys_panel.visible = false
+	else:
+		_update_sys_panel_info()
+		sys_panel.visible = true
+
+func _on_sys_close_pressed():
+	sys_panel.visible = false
+	if not game_started:
+		main_menu_panel.visible = true
+
+func _update_sys_panel_info():
+	var slm = get_node_or_null("/root/SaveLoadManager")
+	if not slm: return
+	
+	var update_btn = func(btn, del_btn, slot, is_save):
+		var info = slm.get_save_info(slot)
+		var prefix = "存檔 " + slot if is_save else "讀取 存檔 " + slot
+		if slot == "auto": prefix = "自動存檔 (不可手動覆蓋)" if is_save else "讀取 自動存檔"
+		
+		if info.exists:
+			btn.text = "%s\nDay %d, $%d (%s)" % [prefix, info.day, info.money, info.datetime]
+			if not is_save: btn.disabled = false
+			if del_btn: del_btn.disabled = false
+		else:
+			btn.text = "%s\n(空)" % prefix
+			if not is_save: btn.disabled = true
+			if del_btn: del_btn.disabled = true
+				
+	var auto_save_btn = $SystemPanel/VBox/TabContainer/Save/SaveSlotAuto
+	update_btn.call(auto_save_btn, null, "auto", true)
+	
+	update_btn.call(save_btn_1, save_del_1, "1", true)
+	update_btn.call(save_btn_2, save_del_2, "2", true)
+	update_btn.call(save_btn_3, save_del_3, "3", true)
+	
+	update_btn.call(load_btn_auto, null, "auto", false)
+	update_btn.call(load_btn_1, load_del_1, "1", false)
+	update_btn.call(load_btn_2, load_del_2, "2", false)
+	update_btn.call(load_btn_3, load_del_3, "3", false)
+
+func _on_save_slot_pressed(slot_id):
+	var slm = get_node_or_null("/root/SaveLoadManager")
+	if slm:
+		slm.save_game(slot_id)
+		_update_sys_panel_info()
+
+func _on_delete_slot_pressed(slot_id):
+	var slm = get_node_or_null("/root/SaveLoadManager")
+	if slm:
+		slm.delete_game(slot_id)
+		_update_sys_panel_info()
+
+func _on_load_slot_pressed(slot_id):
+	var slm = get_node_or_null("/root/SaveLoadManager")
+	if slm:
+		if slm.load_game(slot_id):
+			sys_panel.visible = false
+			game_started = true
+			GameState.skip_main_menu = true
+			render_actions()
+			_update_ui()
+			_update_background()
 
 func _update_ui():
 	# Header
@@ -240,14 +395,29 @@ func render_actions():
 		if act.cost.has("hp"): cost_str += "HP-%d " % act.cost.hp
 		if act.cost.has("money"): cost_str += "$%d " % act.cost.money
 		
+		# Check for Overtime
+		var is_overtime = act.get("isWork", false) and (
+			GameState.time.hour >= GameConstants.work_end_time or 
+			GameState.time.hour < GameConstants.work_start_time
+		)
+		var display_label = act.label
+		
 		# In Breakpoint, time cost is SAN cost
 		if GameState.is_breakpoint_active and act.cost.has("time"):
 			cost_str += "(BP:San-%d)" % act.cost.time
+		elif is_overtime:
+			display_label = "[加班] " + display_label
+			# If overtime, san cost is visually doubled if it exists (for display)
+			var base_san = act.cost.get("san", 0)
+			var ot_san = max(base_san, 10) * 2
+			cost_str += "SAN-%d " % ot_san
+		else:
+			if act.cost.has("san"): cost_str += "SAN-%d " % act.cost.san
 		
 		if cost_str != "":
-			btn.text = "%s\n(%s)" % [act.label, cost_str]
+			btn.text = "%s\n(%s)" % [display_label, cost_str]
 		else:
-			btn.text = "%s" % act.label
+			btn.text = "%s" % display_label
 			
 		btn.custom_minimum_size = Vector2(120, 80)
 		btn.pressed.connect(_on_action_pressed.bind(act))
@@ -258,9 +428,18 @@ func _on_action_pressed(act):
 	if GameState.is_breakpoint_active:
 		# 1. Check Costs (Money/HP still apply?)
 		# User said: "All actions normal, change Cost Time = Cost San"
-		if act.cost.has("hp") and GameState.hp < act.cost.hp:
-			GameState.log_message.emit("體力不足！")
-			return
+		if act.cost.has("hp") and (GameState.hp - act.cost.hp) <= 0:
+			if pending_exhaustion_action_id == act.id:
+				# Second click, let it pass
+				pending_exhaustion_action_id = ""
+			else:
+				# First click, warn and block
+				GameState.log_message.emit("【警告】體力即將透支！再次點擊將會送醫！")
+				pending_exhaustion_action_id = act.id
+				return
+		else:
+			pending_exhaustion_action_id = ""
+			
 		if act.cost.has("money") and GameState.money < act.cost.money:
 			GameState.log_message.emit("金錢不足！")
 			return
@@ -287,9 +466,18 @@ func _on_action_pressed(act):
 		return
 
 	# --- Normal Logic ---
-	if act.cost.has("hp") and GameState.hp < act.cost.hp:
-		GameState.log_message.emit("體力不足！")
-		return
+	if act.cost.has("hp") and (GameState.hp - act.cost.hp) <= 0:
+		if pending_exhaustion_action_id == act.id:
+			# Second click, let it pass
+			pending_exhaustion_action_id = ""
+		else:
+			# First click, warn and block
+			GameState.log_message.emit("【警告】體力即將透支！再次點擊將會送醫！")
+			pending_exhaustion_action_id = act.id
+			return
+	else:
+		pending_exhaustion_action_id = ""
+		
 	if act.cost.has("money") and GameState.money < act.cost.money:
 		GameState.log_message.emit("金錢不足！")
 		return
@@ -298,7 +486,12 @@ func _on_action_pressed(act):
 	if act.cost.has("money"): GameState.modify_money(-act.cost.money)
 	
 	var san_cost = act.cost.get("san", 0)
-	if act.cost.get("isWork", false) and GameState.time.hour >= GameConstants.overtime_start:
+	var is_overtime = act.get("isWork", false) and (
+		GameState.time.hour >= GameConstants.work_end_time or 
+		GameState.time.hour < GameConstants.work_start_time
+	)
+	
+	if is_overtime:
 		san_cost = max(san_cost, 10) * 2
 		GameState.log_message.emit("加班！壓力加倍！")
 	
@@ -533,7 +726,11 @@ func setup_actions_from_csv():
 			elif act.id.begins_with("D"): loc = "dept"
 			elif act.id == "W05": # NPC Interaction
 				act.effect = func(): change_location("npc_select")
-				# Don't add to list yet, handled below
+				act.condition = func(): 
+					return (
+						GameState.time.hour >= GameConstants.work_start_time and 
+						GameState.time.hour < GameConstants.work_end_time
+					)
 			elif cat_map.has(act.category): loc = cat_map[act.category]
 			
 			if actions_data.has(loc):
